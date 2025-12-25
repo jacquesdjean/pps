@@ -299,29 +299,26 @@ function Header() {
         }}
       >
         {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <img
+            src="/logo.png"
+            alt="Prometheus Power Solutions"
             style={{
-              width: 40,
-              height: 40,
-              background: `linear-gradient(135deg, ${colors.orange} 0%, ${colors.blue} 100%)`,
-              borderRadius: 10,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 20,
+              width: isMobile ? 44 : 52,
+              height: isMobile ? 44 : 52,
+              objectFit: 'contain',
             }}
-          >
-            ⚡
-          </div>
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: colors.navy, lineHeight: 1.2 }}>
-              Prometheus Power
+          />
+          {!isMobile && (
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: colors.navy, lineHeight: 1.2 }}>
+                Prometheus Power
+              </div>
+              <div style={{ fontSize: 11, color: colors.textLight, fontWeight: 500 }}>
+                Fort Worth, TX
+              </div>
             </div>
-            <div style={{ fontSize: 11, color: colors.textLight, fontWeight: 500 }}>
-              Fort Worth, TX
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Navigation Links - Tablet & Desktop */}
@@ -1084,20 +1081,15 @@ function Footer() {
           marginBottom: 16,
         }}
       >
-        <div
+        <img
+          src="/logo.png"
+          alt="Prometheus Power Solutions"
           style={{
-            width: 44,
-            height: 44,
-            background: `linear-gradient(135deg, ${colors.orange} 0%, ${colors.blue} 100%)`,
-            borderRadius: 12,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 22,
+            width: 52,
+            height: 52,
+            objectFit: 'contain',
           }}
-        >
-          ⚡
-        </div>
+        />
         <div style={{ textAlign: 'left' }}>
           <div style={{ fontSize: 17, fontWeight: 700, color: colors.white }}>
             Prometheus Power

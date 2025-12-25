@@ -1,6 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import './styles.css';
 
+// Responsive hook for detecting screen size
+const useWindowSize = () => {
+  const [width, setWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 600);
+
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return {
+    width,
+    isMobile: width < 600,
+    isTablet: width >= 600 && width < 1024,
+    isDesktop: width >= 1024,
+  };
+};
+
 // Color palette
 const colors = {
   blue: '#1E6BB8',
@@ -39,48 +57,66 @@ const company = {
 };
 
 // Reusable Section component
-const Section = ({ children, bg = colors.white, id }) => (
-  <section id={id} style={{ background: bg, padding: '48px 20px' }}>
-    <div style={{ maxWidth: 600, margin: '0 auto' }}>
-      {children}
-    </div>
-  </section>
-);
+const Section = ({ children, bg = colors.white, id }) => {
+  const { isMobile, isTablet } = useWindowSize();
+  return (
+    <section
+      id={id}
+      style={{
+        background: bg,
+        padding: isMobile ? '48px 20px' : isTablet ? '80px 32px' : '100px 40px',
+      }}
+    >
+      <div style={{ maxWidth: isMobile ? 600 : isTablet ? 900 : 1140, margin: '0 auto' }}>
+        {children}
+      </div>
+    </section>
+  );
+};
 
 // Reusable Section Header
-const SectionHeader = ({ label, title, subtitle }) => (
-  <div style={{ textAlign: 'center', marginBottom: 28 }}>
-    {label && (
-      <div style={{
-        fontSize: 12,
-        fontWeight: 600,
-        color: colors.blue,
-        letterSpacing: '0.05em',
-        marginBottom: 8,
-        textTransform: 'uppercase',
+const SectionHeader = ({ label, title, subtitle, align = 'center' }) => {
+  const { isMobile, isTablet } = useWindowSize();
+  return (
+    <div style={{ textAlign: align, marginBottom: isMobile ? 28 : 36 }}>
+      {label && (
+        <div style={{
+          fontSize: isMobile ? 12 : 13,
+          fontWeight: 600,
+          color: colors.blue,
+          letterSpacing: '0.05em',
+          marginBottom: 8,
+          textTransform: 'uppercase',
+        }}>
+          {label}
+        </div>
+      )}
+      <h2 style={{
+        fontSize: isMobile ? 26 : isTablet ? 32 : 38,
+        fontWeight: 700,
+        color: colors.navy,
+        marginBottom: subtitle ? 12 : 0,
+        lineHeight: 1.2,
       }}>
-        {label}
-      </div>
-    )}
-    <h2 style={{
-      fontSize: 26,
-      fontWeight: 700,
-      color: colors.navy,
-      marginBottom: subtitle ? 10 : 0,
-      lineHeight: 1.2,
-    }}>
-      {title}
-    </h2>
-    {subtitle && (
-      <p style={{ fontSize: 15, color: colors.textLight, lineHeight: 1.6 }}>
-        {subtitle}
-      </p>
-    )}
-  </div>
-);
+        {title}
+      </h2>
+      {subtitle && (
+        <p style={{
+          fontSize: isMobile ? 15 : 17,
+          color: colors.textLight,
+          lineHeight: 1.6,
+          maxWidth: 600,
+          margin: align === 'center' ? '0 auto' : 0,
+        }}>
+          {subtitle}
+        </p>
+      )}
+    </div>
+  );
+};
 
 // Primary Button
-const PrimaryButton = ({ children, href, onClick, style = {} }) => (
+const PrimaryButton = ({ children, href, onClick, fullWidth = true, style = {} }) => (
   <a
     href={href}
     onClick={onClick}
@@ -88,14 +124,14 @@ const PrimaryButton = ({ children, href, onClick, style = {} }) => (
       background: 'linear-gradient(180deg, #E8862D 0%, #E8762D 100%)',
       boxShadow: '0 2px 8px rgba(232, 118, 45, 0.3)',
       color: colors.white,
-      padding: '16px 24px',
+      padding: '16px 28px',
       borderRadius: 10,
       fontWeight: 600,
       fontSize: 15,
-      width: '100%',
+      width: fullWidth ? '100%' : 'auto',
       textAlign: 'center',
       textDecoration: 'none',
-      display: 'block',
+      display: fullWidth ? 'block' : 'inline-block',
       transition: 'transform 0.2s, box-shadow 0.2s',
       cursor: 'pointer',
       ...style,
@@ -106,21 +142,21 @@ const PrimaryButton = ({ children, href, onClick, style = {} }) => (
 );
 
 // Secondary Button (outline)
-const SecondaryButton = ({ children, href, style = {} }) => (
+const SecondaryButton = ({ children, href, fullWidth = true, style = {} }) => (
   <a
     href={href}
     style={{
       background: colors.white,
       border: `2px solid ${colors.blue}`,
       color: colors.blue,
-      padding: '14px 24px',
+      padding: '14px 28px',
       borderRadius: 10,
       fontWeight: 600,
       fontSize: 15,
-      width: '100%',
+      width: fullWidth ? '100%' : 'auto',
       textAlign: 'center',
       textDecoration: 'none',
-      display: 'block',
+      display: fullWidth ? 'block' : 'inline-block',
       transition: 'background 0.2s, color 0.2s',
       cursor: 'pointer',
       ...style,
@@ -131,38 +167,43 @@ const SecondaryButton = ({ children, href, style = {} }) => (
 );
 
 // Card component
-const Card = ({ children, featured = false, badge = null, badgeColor = colors.blue, style = {} }) => (
-  <div
-    style={{
-      background: colors.white,
-      border: featured ? `2px solid ${colors.blue}` : `1px solid ${colors.border}`,
-      borderRadius: 14,
-      padding: '20px 24px',
-      position: 'relative',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-      ...style,
-    }}
-  >
-    {badge && (
-      <div
-        style={{
-          position: 'absolute',
-          top: -11,
-          left: 20,
-          background: badgeColor,
-          color: colors.white,
-          fontSize: 11,
-          fontWeight: 700,
-          padding: '5px 12px',
-          borderRadius: 6,
-        }}
-      >
-        {badge}
-      </div>
-    )}
-    {children}
-  </div>
-);
+const Card = ({ children, featured = false, badge = null, badgeColor = colors.blue, style = {} }) => {
+  const { isMobile, isTablet } = useWindowSize();
+  const basePadding = isMobile ? '20px 24px' : isTablet ? '24px 28px' : '28px 32px';
+  return (
+    <div
+      className="card"
+      style={{
+        background: colors.white,
+        border: featured ? `2px solid ${colors.blue}` : `1px solid ${colors.border}`,
+        borderRadius: 14,
+        padding: basePadding,
+        position: 'relative',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+        ...style,
+      }}
+    >
+      {badge && (
+        <div
+          style={{
+            position: 'absolute',
+            top: -11,
+            left: 20,
+            background: badgeColor,
+            color: colors.white,
+            fontSize: 11,
+            fontWeight: 700,
+            padding: '5px 12px',
+            borderRadius: 6,
+          }}
+        >
+          {badge}
+        </div>
+      )}
+      {children}
+    </div>
+  );
+};
 
 // Feature Tag
 const Tag = ({ children }) => (
@@ -234,6 +275,9 @@ function App() {
 
 // ============ HEADER ============
 function Header() {
+  const { isMobile, isTablet, isDesktop } = useWindowSize();
+  const navItems = ['Services', 'Products', 'About', 'Reviews'];
+
   return (
     <header
       style={{
@@ -242,12 +286,12 @@ function Header() {
         zIndex: 100,
         background: colors.white,
         borderBottom: `1px solid ${colors.border}`,
-        padding: '12px 20px',
+        padding: isMobile ? '12px 20px' : '14px 32px',
       }}
     >
       <div
         style={{
-          maxWidth: 600,
+          maxWidth: isMobile ? 600 : isTablet ? 900 : 1140,
           margin: '0 auto',
           display: 'flex',
           justifyContent: 'space-between',
@@ -255,30 +299,48 @@ function Header() {
         }}
       >
         {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <img
+            src="/logo.png"
+            alt="Prometheus Power Solutions"
             style={{
-              width: 40,
-              height: 40,
-              background: `linear-gradient(135deg, ${colors.orange} 0%, ${colors.blue} 100%)`,
-              borderRadius: 10,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 20,
+              width: isMobile ? 44 : 52,
+              height: isMobile ? 44 : 52,
+              objectFit: 'contain',
             }}
-          >
-            ⚡
-          </div>
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: colors.navy, lineHeight: 1.2 }}>
-              Prometheus Power
+          />
+          {!isMobile && (
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: colors.navy, lineHeight: 1.2 }}>
+                Prometheus Power
+              </div>
+              <div style={{ fontSize: 11, color: colors.textLight, fontWeight: 500 }}>
+                Fort Worth, TX
+              </div>
             </div>
-            <div style={{ fontSize: 11, color: colors.textLight, fontWeight: 500 }}>
-              Fort Worth, TX
-            </div>
-          </div>
+          )}
         </div>
+
+        {/* Navigation Links - Tablet & Desktop */}
+        {!isMobile && (
+          <nav style={{ display: 'flex', gap: isDesktop ? 32 : 24 }}>
+            {navItems.map((item) => (
+              <a
+                key={item}
+                href={`#${item.toLowerCase()}`}
+                style={{
+                  fontSize: 15,
+                  fontWeight: 500,
+                  color: colors.text,
+                  textDecoration: 'none',
+                  transition: 'color 0.2s',
+                }}
+              >
+                {item}
+              </a>
+            ))}
+          </nav>
+        )}
 
         {/* Call Us Button */}
         <a
@@ -286,7 +348,7 @@ function Header() {
           style={{
             background: 'linear-gradient(180deg, #E8862D 0%, #E8762D 100%)',
             color: colors.white,
-            padding: '10px 16px',
+            padding: isDesktop ? '10px 20px' : '10px 16px',
             borderRadius: 8,
             fontWeight: 600,
             fontSize: 13,
@@ -297,7 +359,7 @@ function Header() {
             minHeight: 44,
           }}
         >
-          📞 Call Us
+          📞 {isDesktop ? company.phone : 'Call Us'}
         </a>
       </div>
     </header>
@@ -306,94 +368,137 @@ function Header() {
 
 // ============ HERO ============
 function Hero() {
+  const { isMobile, isTablet, isDesktop } = useWindowSize();
+
+  const stats = [
+    { num: '500+', label: 'Installations' },
+    { num: '10yr', label: 'Warranty' },
+    { num: '5.0★', label: 'Rating' },
+  ];
+
+  const HeroContent = () => (
+    <>
+      {/* Badge */}
+      <div
+        style={{
+          display: 'inline-block',
+          background: colors.successLight,
+          color: colors.success,
+          fontSize: isMobile ? 12 : 13,
+          fontWeight: 600,
+          padding: '6px 14px',
+          borderRadius: 20,
+          marginBottom: 20,
+        }}
+      >
+        🛡️ Licensed & Insured in Texas
+      </div>
+
+      {/* H1 */}
+      <h1
+        style={{
+          fontSize: isMobile ? 28 : isTablet ? 42 : 52,
+          fontWeight: 800,
+          color: colors.navy,
+          lineHeight: 1.15,
+          marginBottom: isMobile ? 14 : 20,
+        }}
+      >
+        Keep Your Home Powered When the Grid Goes Down
+      </h1>
+
+      {/* Subtitle */}
+      <p
+        style={{
+          fontSize: isMobile ? 16 : 19,
+          color: colors.textLight,
+          lineHeight: 1.6,
+          marginBottom: isMobile ? 28 : 32,
+          maxWidth: isDesktop ? 520 : 480,
+        }}
+      >
+        Professional battery installation, solar integration, and water generation systems for Fort Worth homes. Never worry about outages again.
+      </p>
+
+      {/* CTAs */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: isDesktop ? 'row' : 'column',
+          gap: 12,
+          marginBottom: isDesktop ? 0 : 32,
+          justifyContent: isDesktop ? 'flex-start' : 'center',
+        }}
+      >
+        <PrimaryButton href={`tel:${company.phoneRaw}`} fullWidth={!isDesktop}>
+          Get Your Free Estimate
+        </PrimaryButton>
+        <SecondaryButton href={`tel:${company.phoneRaw}`} fullWidth={!isDesktop}>
+          📞 Call {company.phone}
+        </SecondaryButton>
+      </div>
+    </>
+  );
+
+  const TrustCard = () => (
+    <Card style={{ padding: isMobile ? 20 : 28 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: isMobile ? 8 : 16,
+          textAlign: 'center',
+        }}
+      >
+        {stats.map((stat, i) => (
+          <div key={i}>
+            <div style={{ fontSize: isMobile ? 22 : isTablet ? 26 : 30, fontWeight: 700, color: colors.blue }}>
+              {stat.num}
+            </div>
+            <div style={{ fontSize: isMobile ? 11 : 13, color: colors.textLight, marginTop: 2 }}>
+              {stat.label}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+
   return (
     <section
       style={{
         background: `linear-gradient(180deg, ${colors.blueLight} 0%, ${colors.white} 100%)`,
-        padding: '40px 20px 48px',
+        padding: isMobile ? '40px 20px 48px' : isTablet ? '60px 32px 80px' : '80px 40px 100px',
       }}
     >
-      <div style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
-        {/* Badge */}
-        <div
-          style={{
-            display: 'inline-block',
-            background: colors.successLight,
-            color: colors.success,
-            fontSize: 12,
-            fontWeight: 600,
-            padding: '6px 14px',
-            borderRadius: 20,
-            marginBottom: 20,
-          }}
-        >
-          🛡️ Licensed & Insured in Texas
-        </div>
-
-        {/* H1 */}
-        <h1
-          style={{
-            fontSize: 28,
-            fontWeight: 800,
-            color: colors.navy,
-            lineHeight: 1.15,
-            marginBottom: 14,
-          }}
-        >
-          Keep Your Home Powered When the Grid Goes Down
-        </h1>
-
-        {/* Subtitle */}
-        <p
-          style={{
-            fontSize: 16,
-            color: colors.textLight,
-            lineHeight: 1.6,
-            marginBottom: 28,
-            maxWidth: 480,
-            marginLeft: 'auto',
-            marginRight: 'auto',
-          }}
-        >
-          Professional battery installation, solar integration, and water generation systems for Fort Worth homes. Never worry about outages again.
-        </p>
-
-        {/* CTAs */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
-          <PrimaryButton href={`tel:${company.phoneRaw}`}>
-            Get Your Free Estimate
-          </PrimaryButton>
-          <SecondaryButton href={`tel:${company.phoneRaw}`}>
-            📞 Call {company.phone}
-          </SecondaryButton>
-        </div>
-
-        {/* Trust Stats Card */}
-        <Card style={{ padding: 20 }}>
+      <div
+        style={{
+          maxWidth: isMobile ? 600 : isTablet ? 900 : 1140,
+          margin: '0 auto',
+        }}
+      >
+        {isDesktop ? (
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: 8,
-              textAlign: 'center',
+              gridTemplateColumns: '1fr 1fr',
+              gap: 64,
+              alignItems: 'center',
             }}
           >
-            {[
-              { num: '500+', label: 'Installations' },
-              { num: '10yr', label: 'Warranty' },
-              { num: '5.0★', label: 'Rating' },
-            ].map((stat, i) => (
-              <div key={i}>
-                <div style={{ fontSize: 22, fontWeight: 700, color: colors.blue }}>
-                  {stat.num}
-                </div>
-                <div style={{ fontSize: 11, color: colors.textLight, marginTop: 2 }}>
-                  {stat.label}
-                </div>
-              </div>
-            ))}
+            <div style={{ textAlign: 'left' }}>
+              <HeroContent />
+            </div>
+            <div>
+              <TrustCard />
+            </div>
           </div>
-        </Card>
+        ) : (
+          <div style={{ textAlign: 'center' }}>
+            <HeroContent />
+            <TrustCard />
+          </div>
+        )}
       </div>
     </section>
   );
@@ -401,6 +506,7 @@ function Hero() {
 
 // ============ PROBLEM SECTION ============
 function ProblemSection() {
+  const { isMobile } = useWindowSize();
   const problems = [
     { icon: '❄️', title: 'Winter Storms', desc: 'Remember February 2021?' },
     { icon: '🌡️', title: 'Summer Heat', desc: 'Rolling blackouts when you need AC most' },
@@ -418,17 +524,17 @@ function ProblemSection() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 12,
+          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+          gap: isMobile ? 12 : 24,
         }}
       >
         {problems.map((p, i) => (
-          <Card key={i} style={{ textAlign: 'center', padding: 16 }}>
-            <div style={{ fontSize: 28, marginBottom: 8 }}>{p.icon}</div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: colors.navy, marginBottom: 4 }}>
+          <Card key={i} style={{ textAlign: 'center', padding: isMobile ? 16 : 24 }}>
+            <div style={{ fontSize: isMobile ? 28 : 32, marginBottom: 8 }}>{p.icon}</div>
+            <div style={{ fontSize: isMobile ? 14 : 16, fontWeight: 600, color: colors.navy, marginBottom: 4 }}>
               {p.title}
             </div>
-            <div style={{ fontSize: 13, color: colors.textLight, lineHeight: 1.4 }}>
+            <div style={{ fontSize: isMobile ? 13 : 14, color: colors.textLight, lineHeight: 1.4 }}>
               {p.desc}
             </div>
           </Card>
@@ -440,6 +546,7 @@ function ProblemSection() {
 
 // ============ SERVICES SECTION ============
 function ServicesSection() {
+  const { isMobile } = useWindowSize();
   const services = [
     {
       icon: '🔋',
@@ -463,6 +570,45 @@ function ServicesSection() {
     },
   ];
 
+  // Service card component that adapts layout based on screen size
+  const ServiceCard = ({ service }) => (
+    <Card style={{ padding: isMobile ? 16 : 24 }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: isMobile ? 'row' : 'column',
+          alignItems: isMobile ? 'flex-start' : 'center',
+          textAlign: isMobile ? 'left' : 'center',
+          gap: isMobile ? 14 : 16,
+        }}
+      >
+        <div
+          style={{
+            width: isMobile ? 48 : 56,
+            height: isMobile ? 48 : 56,
+            background: colors.blueLight,
+            borderRadius: 12,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: isMobile ? 22 : 28,
+            flexShrink: 0,
+          }}
+        >
+          {service.icon}
+        </div>
+        <div>
+          <h3 style={{ fontSize: isMobile ? 16 : 18, fontWeight: 600, color: colors.navy, marginBottom: 4 }}>
+            {service.title}
+          </h3>
+          <p style={{ fontSize: isMobile ? 14 : 15, color: colors.textLight, lineHeight: 1.5 }}>
+            {service.desc}
+          </p>
+        </div>
+      </div>
+    </Card>
+  );
+
   return (
     <Section bg={colors.white} id="services">
       <SectionHeader
@@ -470,43 +616,33 @@ function ServicesSection() {
         title="Our Services"
       />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {services.map((s, i) => (
-          <Card key={i} style={{ padding: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-              <div
-                style={{
-                  width: 48,
-                  height: 48,
-                  background: colors.blueLight,
-                  borderRadius: 12,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 22,
-                  flexShrink: 0,
-                }}
-              >
-                {s.icon}
-              </div>
-              <div>
-                <h3 style={{ fontSize: 16, fontWeight: 600, color: colors.navy, marginBottom: 4 }}>
-                  {s.title}
-                </h3>
-                <p style={{ fontSize: 14, color: colors.textLight, lineHeight: 1.5 }}>
-                  {s.desc}
-                </p>
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
+      {isMobile ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {services.map((s, i) => (
+            <ServiceCard key={i} service={s} />
+          ))}
+        </div>
+      ) : (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: 24,
+          }}
+        >
+          {services.map((s, i) => (
+            <ServiceCard key={i} service={s} />
+          ))}
+        </div>
+      )}
     </Section>
   );
 }
 
 // ============ PRODUCTS SECTION ============
 function ProductsSection() {
+  const { isMobile, isTablet } = useWindowSize();
+
   const products = [
     {
       name: 'FranklinWH',
@@ -550,6 +686,56 @@ function ProductsSection() {
     },
   ];
 
+  const ProductCard = ({ product }) => (
+    <Card
+      featured={product.featured}
+      badge={product.badge}
+      badgeColor={product.badgeColor}
+      style={{ paddingTop: product.badge ? 28 : undefined }}
+    >
+      <h3 style={{ fontSize: isMobile ? 18 : 20, fontWeight: 700, color: colors.navy, marginBottom: 4 }}>
+        {product.name}
+      </h3>
+      <div style={{ fontSize: isMobile ? 14 : 15, color: colors.blue, fontWeight: 500, marginBottom: 10 }}>
+        {product.tagline}
+      </div>
+      <p style={{ fontSize: isMobile ? 14 : 15, color: colors.textLight, lineHeight: 1.6, marginBottom: 14 }}>
+        {product.desc}
+      </p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+        {product.tags.map((tag, j) => (
+          <Tag key={j}>{tag}</Tag>
+        ))}
+      </div>
+      <ProductLink href={product.link}>Learn more</ProductLink>
+    </Card>
+  );
+
+  const OtherCard = () => (
+    <Card style={{ textAlign: 'center', padding: isMobile ? 20 : 28 }}>
+      <div style={{ fontSize: isMobile ? 15 : 17, fontWeight: 600, color: colors.navy, marginBottom: 8 }}>
+        Need something else?
+      </div>
+      <p style={{ fontSize: isMobile ? 14 : 15, color: colors.textLight, lineHeight: 1.5, marginBottom: 12 }}>
+        We install other battery systems by request—EG4, EcoFlow, and more. Tell us what you need.
+      </p>
+      <a
+        href={`tel:${company.phoneRaw}`}
+        style={{
+          color: colors.blue,
+          fontWeight: 600,
+          fontSize: isMobile ? 14 : 15,
+          textDecoration: 'none',
+        }}
+      >
+        Contact us →
+      </a>
+    </Card>
+  );
+
+  const featuredProduct = products.find((p) => p.featured);
+  const otherProducts = products.filter((p) => !p.featured);
+
   return (
     <Section bg={colors.offWhite} id="products">
       <SectionHeader
@@ -557,60 +743,44 @@ function ProductsSection() {
         title="Quality Brands We Trust"
       />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {products.map((p, i) => (
-          <Card
-            key={i}
-            featured={p.featured}
-            badge={p.badge}
-            badgeColor={p.badgeColor}
-            style={{ paddingTop: p.badge ? 28 : 20 }}
-          >
-            <h3 style={{ fontSize: 18, fontWeight: 700, color: colors.navy, marginBottom: 4 }}>
-              {p.name}
-            </h3>
-            <div style={{ fontSize: 14, color: colors.blue, fontWeight: 500, marginBottom: 10 }}>
-              {p.tagline}
-            </div>
-            <p style={{ fontSize: 14, color: colors.textLight, lineHeight: 1.6, marginBottom: 14 }}>
-              {p.desc}
-            </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
-              {p.tags.map((tag, j) => (
-                <Tag key={j}>{tag}</Tag>
-              ))}
-            </div>
-            <ProductLink href={p.link}>Learn more</ProductLink>
-          </Card>
-        ))}
+      {isMobile ? (
+        // Mobile: Stacked full-width cards
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {products.map((p, i) => (
+            <ProductCard key={i} product={p} />
+          ))}
+          <OtherCard />
+        </div>
+      ) : (
+        // Tablet/Desktop: Featured full-width, others in 2x2 grid
+        <div>
+          {/* Featured product - full width */}
+          <ProductCard product={featuredProduct} />
 
-        {/* Other Batteries */}
-        <Card style={{ textAlign: 'center', padding: 20 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: colors.navy, marginBottom: 8 }}>
-            Need something else?
-          </div>
-          <p style={{ fontSize: 14, color: colors.textLight, lineHeight: 1.5, marginBottom: 12 }}>
-            We install other battery systems by request—EG4, EcoFlow, and more. Tell us what you need.
-          </p>
-          <a
-            href={`tel:${company.phoneRaw}`}
+          {/* Other products - 2x2 grid */}
+          <div
             style={{
-              color: colors.blue,
-              fontWeight: 600,
-              fontSize: 14,
-              textDecoration: 'none',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: 20,
+              marginTop: 20,
             }}
           >
-            Contact us →
-          </a>
-        </Card>
-      </div>
+            {otherProducts.map((p, i) => (
+              <ProductCard key={i} product={p} />
+            ))}
+            <OtherCard />
+          </div>
+        </div>
+      )}
     </Section>
   );
 }
 
 // ============ ABOUT SECTION ============
 function AboutSection() {
+  const { isMobile, isDesktop } = useWindowSize();
+
   const badges = [
     { icon: '🏠', label: 'Locally Owned' },
     { icon: '📋', label: 'Texas Licensed' },
@@ -626,6 +796,50 @@ function AboutSection() {
     '10-year workmanship warranty',
   ];
 
+  const TrustBadges = () => (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: isMobile ? 12 : 16,
+        marginBottom: isMobile ? 20 : 0,
+      }}
+    >
+      {badges.map((b, i) => (
+        <Card key={i} style={{ textAlign: 'center', padding: isMobile ? 16 : 20 }}>
+          <div style={{ fontSize: isMobile ? 28 : 32, marginBottom: 6 }}>{b.icon}</div>
+          <div style={{ fontSize: isMobile ? 13 : 14, fontWeight: 600, color: colors.navy }}>{b.label}</div>
+        </Card>
+      ))}
+    </div>
+  );
+
+  const WhyUsCard = () => (
+    <div
+      style={{
+        background: colors.navy,
+        borderRadius: 14,
+        padding: isMobile ? 24 : 32,
+        height: isMobile ? 'auto' : '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+      }}
+    >
+      <h3 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color: colors.white, marginBottom: 20 }}>
+        Why Choose Us
+      </h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 12 : 16 }}>
+        {whyUs.map((item, i) => (
+          <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <span style={{ color: colors.success, fontSize: 18, marginTop: 1 }}>✓</span>
+            <span style={{ fontSize: isMobile ? 14 : 16, color: '#E2E8F0', lineHeight: 1.5 }}>{item}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <Section bg={colors.white} id="about">
       <SectionHeader
@@ -633,49 +847,34 @@ function AboutSection() {
         subtitle="We're a Fort Worth company, owned and operated by Texans who understand what it means to lose power in the summer heat or during a winter freeze."
       />
 
-      {/* Trust Badges */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 12,
-          marginBottom: 20,
-        }}
-      >
-        {badges.map((b, i) => (
-          <Card key={i} style={{ textAlign: 'center', padding: 16 }}>
-            <div style={{ fontSize: 28, marginBottom: 6 }}>{b.icon}</div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: colors.navy }}>{b.label}</div>
-          </Card>
-        ))}
-      </div>
-
-      {/* Why Choose Us Card */}
-      <div
-        style={{
-          background: colors.navy,
-          borderRadius: 14,
-          padding: 24,
-        }}
-      >
-        <h3 style={{ fontSize: 18, fontWeight: 700, color: colors.white, marginBottom: 16 }}>
-          Why Choose Us
-        </h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {whyUs.map((item, i) => (
-            <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-              <span style={{ color: colors.success, fontSize: 16, marginTop: 1 }}>✓</span>
-              <span style={{ fontSize: 14, color: '#E2E8F0', lineHeight: 1.5 }}>{item}</span>
-            </div>
-          ))}
+      {isMobile ? (
+        <>
+          <TrustBadges />
+          <WhyUsCard />
+        </>
+      ) : (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: isDesktop ? 48 : 32,
+            alignItems: 'stretch',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <TrustBadges />
+          </div>
+          <WhyUsCard />
         </div>
-      </div>
+      )}
     </Section>
   );
 }
 
 // ============ REVIEWS SECTION ============
 function ReviewsSection() {
+  const { isMobile, isTablet, isDesktop } = useWindowSize();
+
   const reviews = [
     {
       quote: "After the 2021 freeze, we knew we needed backup power. Prometheus made it easy. Professional from start to finish, and now we sleep easy during storms.",
@@ -694,27 +893,37 @@ function ReviewsSection() {
     },
   ];
 
+  const ReviewCard = ({ review }) => (
+    <Card style={{ padding: isMobile ? 20 : 24 }}>
+      {/* Stars */}
+      <div style={{ display: 'flex', gap: 2, marginBottom: 12 }}>
+        {[1, 2, 3, 4, 5].map((s) => (
+          <span key={s} style={{ color: '#FBBF24', fontSize: isMobile ? 16 : 18 }}>★</span>
+        ))}
+      </div>
+      <p style={{ fontSize: isMobile ? 14 : 15, color: colors.text, lineHeight: 1.6, marginBottom: 14 }}>
+        "{review.quote}"
+      </p>
+      <div style={{ fontSize: isMobile ? 14 : 15 }}>
+        <span style={{ fontWeight: 600, color: colors.navy }}>{review.author}</span>
+        <span style={{ color: colors.textLight }}> • {review.location}</span>
+      </div>
+    </Card>
+  );
+
   return (
     <Section bg={colors.offWhite} id="reviews">
       <SectionHeader title="What Customers Say" />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+          gap: isMobile ? 14 : 24,
+        }}
+      >
         {reviews.map((r, i) => (
-          <Card key={i} style={{ padding: 20 }}>
-            {/* Stars */}
-            <div style={{ display: 'flex', gap: 2, marginBottom: 12 }}>
-              {[1, 2, 3, 4, 5].map((s) => (
-                <span key={s} style={{ color: '#FBBF24', fontSize: 16 }}>★</span>
-              ))}
-            </div>
-            <p style={{ fontSize: 14, color: colors.text, lineHeight: 1.6, marginBottom: 14 }}>
-              "{r.quote}"
-            </p>
-            <div style={{ fontSize: 14 }}>
-              <span style={{ fontWeight: 600, color: colors.navy }}>{r.author}</span>
-              <span style={{ color: colors.textLight }}> • {r.location}</span>
-            </div>
-          </Card>
+          <ReviewCard key={i} review={r} />
         ))}
       </div>
     </Section>
@@ -723,63 +932,129 @@ function ReviewsSection() {
 
 // ============ SERVICE AREA SECTION ============
 function ServiceAreaSection() {
-  return (
-    <Section bg={colors.navy} id="areas">
-      <div style={{ textAlign: 'center' }}>
-        <h2 style={{ fontSize: 24, fontWeight: 700, color: colors.white, marginBottom: 10 }}>
-          Serving the DFW Metroplex
-        </h2>
-        <p style={{ fontSize: 14, color: '#94A3B8', marginBottom: 24, lineHeight: 1.5 }}>
-          Based in Fort Worth, proudly serving these communities and beyond.
-        </p>
+  const { isMobile, isDesktop } = useWindowSize();
 
-        <div
+  const HeadlineContent = () => (
+    <>
+      <h2
+        style={{
+          fontSize: isMobile ? 24 : isDesktop ? 32 : 28,
+          fontWeight: 700,
+          color: colors.white,
+          marginBottom: 10,
+        }}
+      >
+        Serving the DFW Metroplex
+      </h2>
+      <p
+        style={{
+          fontSize: isMobile ? 14 : 16,
+          color: '#94A3B8',
+          marginBottom: isDesktop ? 0 : 24,
+          lineHeight: 1.5,
+        }}
+      >
+        Based in Fort Worth, proudly serving these communities and beyond.
+      </p>
+    </>
+  );
+
+  const CityTags = () => (
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: isMobile ? 8 : 10,
+        justifyContent: isDesktop ? 'flex-start' : 'center',
+      }}
+    >
+      {company.serviceArea.map((city, i) => (
+        <span
+          key={i}
           style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 8,
-            justifyContent: 'center',
+            background: city === 'Fort Worth' ? colors.blue : 'rgba(255,255,255,0.1)',
+            color: colors.white,
+            fontSize: isMobile ? 13 : 14,
+            fontWeight: city === 'Fort Worth' ? 600 : 500,
+            padding: isMobile ? '8px 14px' : '10px 18px',
+            borderRadius: 20,
+            border: city === 'Fort Worth' ? 'none' : '1px solid rgba(255,255,255,0.15)',
           }}
         >
-          {company.serviceArea.map((city, i) => (
-            <span
-              key={i}
-              style={{
-                background: city === 'Fort Worth' ? colors.blue : 'rgba(255,255,255,0.1)',
-                color: colors.white,
-                fontSize: 13,
-                fontWeight: city === 'Fort Worth' ? 600 : 500,
-                padding: '8px 14px',
-                borderRadius: 20,
-                border: city === 'Fort Worth' ? 'none' : '1px solid rgba(255,255,255,0.15)',
-              }}
-            >
-              {city}
-            </span>
-          ))}
+          {city}
+        </span>
+      ))}
+    </div>
+  );
+
+  return (
+    <Section bg={colors.navy} id="areas">
+      {isDesktop ? (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 48,
+            alignItems: 'center',
+          }}
+        >
+          <div style={{ textAlign: 'left' }}>
+            <HeadlineContent />
+          </div>
+          <div>
+            <CityTags />
+          </div>
         </div>
-      </div>
+      ) : (
+        <div style={{ textAlign: 'center' }}>
+          <HeadlineContent />
+          <CityTags />
+        </div>
+      )}
     </Section>
   );
 }
 
 // ============ FINAL CTA ============
 function FinalCTA() {
+  const { isMobile, isTablet, isDesktop } = useWindowSize();
+
   return (
     <Section bg={colors.blueLight}>
-      <div style={{ textAlign: 'center' }}>
-        <h2 style={{ fontSize: 26, fontWeight: 700, color: colors.navy, marginBottom: 12 }}>
+      <div style={{ textAlign: 'center', maxWidth: isDesktop ? 700 : undefined, margin: '0 auto' }}>
+        <h2
+          style={{
+            fontSize: isMobile ? 26 : isTablet ? 32 : 38,
+            fontWeight: 700,
+            color: colors.navy,
+            marginBottom: 12,
+          }}
+        >
           Ready to Stop Worrying?
         </h2>
-        <p style={{ fontSize: 15, color: colors.textLight, marginBottom: 28, lineHeight: 1.5 }}>
+        <p
+          style={{
+            fontSize: isMobile ? 15 : 17,
+            color: colors.textLight,
+            marginBottom: isMobile ? 28 : 36,
+            lineHeight: 1.5,
+          }}
+        >
           Get a free, no-pressure estimate for your home. We'll assess your needs and design a system that fits your budget.
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <PrimaryButton href={`tel:${company.phoneRaw}`}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: 12,
+            justifyContent: 'center',
+          }}
+        >
+          <PrimaryButton href={`tel:${company.phoneRaw}`} fullWidth={isMobile}>
             Get Your Free Estimate
           </PrimaryButton>
-          <SecondaryButton href={`tel:${company.phoneRaw}`}>
+          <SecondaryButton href={`tel:${company.phoneRaw}`} fullWidth={isMobile}>
             📞 Call {company.phone}
           </SecondaryButton>
         </div>
@@ -790,62 +1065,171 @@ function FinalCTA() {
 
 // ============ FOOTER ============
 function Footer() {
-  return (
-    <footer style={{ background: colors.navy, padding: '48px 20px 32px' }}>
-      <div style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
-        {/* Logo */}
-        <div
+  const { isMobile, isTablet, isDesktop } = useWindowSize();
+
+  const services = ['Battery Installation', 'Solar Integration', 'Water Systems', 'Smart Panels'];
+  const products = ['FranklinWH', 'SPAN Panel', 'Aquaria', 'Tesla Powerwall'];
+
+  const LogoSection = () => (
+    <div style={{ marginBottom: isMobile ? 24 : 0 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: isMobile ? 'center' : 'flex-start',
+          gap: 12,
+          marginBottom: 16,
+        }}
+      >
+        <img
+          src="/logo.png"
+          alt="Prometheus Power Solutions"
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 12,
-            marginBottom: 20,
+            width: 52,
+            height: 52,
+            objectFit: 'contain',
           }}
-        >
-          <div
-            style={{
-              width: 44,
-              height: 44,
-              background: `linear-gradient(135deg, ${colors.orange} 0%, ${colors.blue} 100%)`,
-              borderRadius: 12,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 22,
-            }}
-          >
-            ⚡
+        />
+        <div style={{ textAlign: 'left' }}>
+          <div style={{ fontSize: 17, fontWeight: 700, color: colors.white }}>
+            Prometheus Power
           </div>
-          <div style={{ textAlign: 'left' }}>
-            <div style={{ fontSize: 17, fontWeight: 700, color: colors.white }}>
-              Prometheus Power Solutions
-            </div>
-            <div style={{ fontSize: 12, color: '#94A3B8' }}>
-              Fort Worth, TX
-            </div>
+          <div style={{ fontSize: 12, color: '#94A3B8' }}>
+            Fort Worth, TX
           </div>
         </div>
+      </div>
+      <p
+        style={{
+          fontSize: 13,
+          color: '#94A3B8',
+          lineHeight: 1.6,
+          marginBottom: 16,
+          textAlign: isMobile ? 'center' : 'left',
+        }}
+      >
+        Professional battery and solar solutions for Texas homes.
+      </p>
+      <div style={{ fontSize: 12, color: '#64748B', textAlign: isMobile ? 'center' : 'left' }}>
+        {company.license}
+      </div>
+    </div>
+  );
 
-        {/* License */}
-        <div style={{ fontSize: 12, color: '#64748B', marginBottom: 20 }}>
-          Texas Electrical Contractor License: {company.license}
-        </div>
+  const FooterColumn = ({ title, items }) => (
+    <div style={{ marginBottom: isMobile ? 24 : 0 }}>
+      <h4
+        style={{
+          fontSize: 14,
+          fontWeight: 600,
+          color: colors.white,
+          marginBottom: 16,
+          textAlign: isMobile ? 'center' : 'left',
+        }}
+      >
+        {title}
+      </h4>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+          alignItems: isMobile ? 'center' : 'flex-start',
+        }}
+      >
+        {items.map((item, i) => (
+          <span key={i} style={{ fontSize: 13, color: '#94A3B8' }}>
+            {item}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
 
-        {/* Phone */}
+  const ContactColumn = () => (
+    <div>
+      <h4
+        style={{
+          fontSize: 14,
+          fontWeight: 600,
+          color: colors.white,
+          marginBottom: 16,
+          textAlign: isMobile ? 'center' : 'left',
+        }}
+      >
+        Contact
+      </h4>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+          alignItems: isMobile ? 'center' : 'flex-start',
+        }}
+      >
         <a
           href={`tel:${company.phoneRaw}`}
           style={{
-            display: 'inline-block',
-            fontSize: 24,
+            fontSize: 18,
             fontWeight: 700,
             color: colors.orange,
             textDecoration: 'none',
-            marginBottom: 24,
           }}
         >
           {company.phone}
         </a>
+        <span style={{ fontSize: 13, color: '#94A3B8' }}>Fort Worth, TX</span>
+      </div>
+    </div>
+  );
+
+  return (
+    <footer
+      style={{
+        background: colors.navy,
+        padding: isMobile ? '48px 20px 32px' : '64px 40px 40px',
+      }}
+    >
+      <div
+        style={{
+          maxWidth: isMobile ? 600 : isTablet ? 900 : 1140,
+          margin: '0 auto',
+        }}
+      >
+        {isMobile ? (
+          // Mobile: Centered, stacked layout
+          <div style={{ textAlign: 'center' }}>
+            <LogoSection />
+            <a
+              href={`tel:${company.phoneRaw}`}
+              style={{
+                display: 'inline-block',
+                fontSize: 24,
+                fontWeight: 700,
+                color: colors.orange,
+                textDecoration: 'none',
+                marginBottom: 24,
+              }}
+            >
+              {company.phone}
+            </a>
+          </div>
+        ) : (
+          // Tablet/Desktop: 4-column grid
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1.5fr 1fr 1fr 1fr',
+              gap: isDesktop ? 48 : 32,
+              marginBottom: 40,
+            }}
+          >
+            <LogoSection />
+            <FooterColumn title="Services" items={services} />
+            <FooterColumn title="Products" items={products} />
+            <ContactColumn />
+          </div>
+        )}
 
         {/* Copyright */}
         <div
@@ -854,6 +1238,7 @@ function Footer() {
             color: '#475569',
             borderTop: '1px solid #2D3748',
             paddingTop: 20,
+            textAlign: 'center',
           }}
         >
           © {new Date().getFullYear()} Prometheus Power Solutions. All rights reserved.

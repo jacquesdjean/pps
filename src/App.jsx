@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import './styles.css';
 
 // Color palette
@@ -6,9 +6,9 @@ const colors = {
   blue: '#1E6BB8',
   blueLight: '#E8F2FC',
   blueDark: '#14507D',
+  navy: '#1A2B3C',
   orange: '#E8762D',
   orangeLight: '#FEF3EB',
-  navy: '#1A2B3C',
   white: '#FFFFFF',
   offWhite: '#F9FAFB',
   text: '#2D3748',
@@ -21,10 +21,189 @@ const colors = {
 // Company info
 const company = {
   name: 'Prometheus Power Solutions',
-  tagline: 'Energy & Water Independence for Texas Homes',
-  phone: '(817) 555-0199',
-  location: 'Fort Worth, Texas',
-  yearsExp: '5+',
+  phone: '(817) 555-0123',
+  phoneRaw: '8175550123',
+  location: 'Fort Worth, TX',
+  license: 'TECL #XXXXX',
+  serviceArea: [
+    'Fort Worth',
+    'Arlington',
+    'Southlake',
+    'Keller',
+    'Grapevine',
+    'Colleyville',
+    'Weatherford',
+    'Burleson',
+    'Mansfield',
+  ],
+};
+
+// Reusable Section component
+const Section = ({ children, bg = colors.white, id }) => (
+  <section id={id} style={{ background: bg, padding: '48px 20px' }}>
+    <div style={{ maxWidth: 600, margin: '0 auto' }}>
+      {children}
+    </div>
+  </section>
+);
+
+// Reusable Section Header
+const SectionHeader = ({ label, title, subtitle }) => (
+  <div style={{ textAlign: 'center', marginBottom: 28 }}>
+    {label && (
+      <div style={{
+        fontSize: 12,
+        fontWeight: 600,
+        color: colors.blue,
+        letterSpacing: '0.05em',
+        marginBottom: 8,
+        textTransform: 'uppercase',
+      }}>
+        {label}
+      </div>
+    )}
+    <h2 style={{
+      fontSize: 26,
+      fontWeight: 700,
+      color: colors.navy,
+      marginBottom: subtitle ? 10 : 0,
+      lineHeight: 1.2,
+    }}>
+      {title}
+    </h2>
+    {subtitle && (
+      <p style={{ fontSize: 15, color: colors.textLight, lineHeight: 1.6 }}>
+        {subtitle}
+      </p>
+    )}
+  </div>
+);
+
+// Primary Button
+const PrimaryButton = ({ children, href, onClick, style = {} }) => (
+  <a
+    href={href}
+    onClick={onClick}
+    style={{
+      background: 'linear-gradient(180deg, #E8862D 0%, #E8762D 100%)',
+      boxShadow: '0 2px 8px rgba(232, 118, 45, 0.3)',
+      color: colors.white,
+      padding: '16px 24px',
+      borderRadius: 10,
+      fontWeight: 600,
+      fontSize: 15,
+      width: '100%',
+      textAlign: 'center',
+      textDecoration: 'none',
+      display: 'block',
+      transition: 'transform 0.2s, box-shadow 0.2s',
+      cursor: 'pointer',
+      ...style,
+    }}
+  >
+    {children}
+  </a>
+);
+
+// Secondary Button (outline)
+const SecondaryButton = ({ children, href, style = {} }) => (
+  <a
+    href={href}
+    style={{
+      background: colors.white,
+      border: `2px solid ${colors.blue}`,
+      color: colors.blue,
+      padding: '14px 24px',
+      borderRadius: 10,
+      fontWeight: 600,
+      fontSize: 15,
+      width: '100%',
+      textAlign: 'center',
+      textDecoration: 'none',
+      display: 'block',
+      transition: 'background 0.2s, color 0.2s',
+      cursor: 'pointer',
+      ...style,
+    }}
+  >
+    {children}
+  </a>
+);
+
+// Card component
+const Card = ({ children, featured = false, badge = null, badgeColor = colors.blue, style = {} }) => (
+  <div
+    style={{
+      background: colors.white,
+      border: featured ? `2px solid ${colors.blue}` : `1px solid ${colors.border}`,
+      borderRadius: 14,
+      padding: '20px 24px',
+      position: 'relative',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+      ...style,
+    }}
+  >
+    {badge && (
+      <div
+        style={{
+          position: 'absolute',
+          top: -11,
+          left: 20,
+          background: badgeColor,
+          color: colors.white,
+          fontSize: 11,
+          fontWeight: 700,
+          padding: '5px 12px',
+          borderRadius: 6,
+        }}
+      >
+        {badge}
+      </div>
+    )}
+    {children}
+  </div>
+);
+
+// Feature Tag
+const Tag = ({ children }) => (
+  <span
+    style={{
+      background: colors.blueLight,
+      color: colors.blue,
+      fontSize: 12,
+      fontWeight: 500,
+      padding: '5px 10px',
+      borderRadius: 6,
+    }}
+  >
+    {children}
+  </span>
+);
+
+// Product Link
+const ProductLink = ({ href, children }) => {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        color: colors.blue,
+        fontWeight: 600,
+        fontSize: 13,
+        textDecoration: 'none',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: hovered ? 8 : 4,
+        transition: 'gap 0.2s',
+      }}
+    >
+      {children} <span>→</span>
+    </a>
+  );
 };
 
 function App() {
@@ -38,17 +217,13 @@ function App() {
   }, []);
 
   return (
-    <div>
+    <div style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>
       <Header />
       <Hero />
-      <StatsBar />
       <ProblemSection />
       <ServicesSection />
-      <CommercialBanner />
       <ProductsSection />
-      <ProcessSection />
       <AboutSection />
-      <CertificationsSection />
       <ReviewsSection />
       <ServiceAreaSection />
       <FinalCTA />
@@ -60,8 +235,26 @@ function App() {
 // ============ HEADER ============
 function Header() {
   return (
-    <header className="header">
-      <div className="header-inner">
+    <header
+      style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        background: colors.white,
+        borderBottom: `1px solid ${colors.border}`,
+        padding: '12px 20px',
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 600,
+          margin: '0 auto',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div
             style={{
@@ -78,36 +271,33 @@ function Header() {
             ⚡
           </div>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: colors.navy, lineHeight: 1.2 }}>
-              Prometheus
+            <div style={{ fontSize: 15, fontWeight: 700, color: colors.navy, lineHeight: 1.2 }}>
+              Prometheus Power
             </div>
             <div style={{ fontSize: 11, color: colors.textLight, fontWeight: 500 }}>
-              Power Solutions
+              Fort Worth, TX
             </div>
           </div>
         </div>
 
-        <nav className="header-nav">
-          <a href="#services">Services</a>
-          <a href="#products">Products</a>
-          <a href="#process">Our Process</a>
-          <a href="#about">About</a>
-          <a href="#reviews">Reviews</a>
-          <a href="#areas">Service Areas</a>
-        </nav>
-
-        <div className="header-secondary-nav">
-          <span style={{ fontSize: 14, color: colors.textLight }}>
-            {company.phone}
-          </span>
-          <a href={`tel:${company.phone}`} className="btn-primary btn-header">
-            Get Free Quote
-          </a>
-        </div>
-
-        {/* Mobile CTA */}
-        <a href={`tel:${company.phone}`} className="btn-primary btn-header mobile-only">
-          Call Now
+        {/* Call Us Button */}
+        <a
+          href={`tel:${company.phoneRaw}`}
+          style={{
+            background: 'linear-gradient(180deg, #E8862D 0%, #E8762D 100%)',
+            color: colors.white,
+            padding: '10px 16px',
+            borderRadius: 8,
+            fontWeight: 600,
+            fontSize: 13,
+            textDecoration: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            minHeight: 44,
+          }}
+        >
+          📞 Call Us
         </a>
       </div>
     </header>
@@ -117,183 +307,134 @@ function Header() {
 // ============ HERO ============
 function Hero() {
   return (
-    <section className="hero" style={{ background: colors.white }}>
-      <div className="hero-inner">
-        <div className="hero-content">
-          {/* Badge */}
-          <div
-            style={{
-              display: 'inline-block',
-              background: colors.blueLight,
-              color: colors.blue,
-              fontSize: 12,
-              fontWeight: 600,
-              padding: '6px 14px',
-              borderRadius: 6,
-              marginBottom: 20,
-            }}
-          >
-            Fort Worth Energy Experts
-          </div>
+    <section
+      style={{
+        background: `linear-gradient(180deg, ${colors.blueLight} 0%, ${colors.white} 100%)`,
+        padding: '40px 20px 48px',
+      }}
+    >
+      <div style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
+        {/* Badge */}
+        <div
+          style={{
+            display: 'inline-block',
+            background: colors.successLight,
+            color: colors.success,
+            fontSize: 12,
+            fontWeight: 600,
+            padding: '6px 14px',
+            borderRadius: 20,
+            marginBottom: 20,
+          }}
+        >
+          🛡️ Licensed & Insured in Texas
+        </div>
 
-          {/* Headline */}
-          <h1>
-            Backup Power & Energy Storage for Texas Homes
-          </h1>
+        {/* H1 */}
+        <h1
+          style={{
+            fontSize: 28,
+            fontWeight: 800,
+            color: colors.navy,
+            lineHeight: 1.15,
+            marginBottom: 14,
+          }}
+        >
+          Keep Your Home Powered When the Grid Goes Down
+        </h1>
 
-          {/* Subtext */}
-          <p
-            style={{
-              fontSize: 16,
-              color: colors.textLight,
-              lineHeight: 1.6,
-              marginBottom: 28,
-              maxWidth: 520,
-            }}
-          >
-            Battery systems, panel upgrades, and whole-home solutions. Licensed, insured, and serving the DFW Metroplex.
-          </p>
+        {/* Subtitle */}
+        <p
+          style={{
+            fontSize: 16,
+            color: colors.textLight,
+            lineHeight: 1.6,
+            marginBottom: 28,
+            maxWidth: 480,
+            marginLeft: 'auto',
+            marginRight: 'auto',
+          }}
+        >
+          Professional battery installation, solar integration, and water generation systems for Fort Worth homes. Never worry about outages again.
+        </p>
 
-          {/* CTAs */}
-          <div className="hero-ctas">
-            <a href={`tel:${company.phone}`} className="btn-primary">
-              Get Free Quote
-            </a>
-            <a href="#services" className="btn-secondary hide-mobile">
-              View Services
-            </a>
-          </div>
-
-          {/* Credentials */}
-          <div className="hero-badge-row">
-            {[
-              { icon: '⚡', text: 'Tesla Certified' },
-              { icon: '🔧', text: 'NABCEP Certified' },
-            ].map((badge, i) => (
-              <div
-                key={i}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  background: colors.offWhite,
-                  padding: '8px 14px',
-                  borderRadius: 6,
-                  fontSize: 13,
-                  fontWeight: 500,
-                  color: colors.text,
-                }}
-              >
-                <span>{badge.icon}</span>
-                <span>{badge.text}</span>
-              </div>
-            ))}
-          </div>
+        {/* CTAs */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
+          <PrimaryButton href={`tel:${company.phoneRaw}`}>
+            Get Your Free Estimate
+          </PrimaryButton>
+          <SecondaryButton href={`tel:${company.phoneRaw}`}>
+            📞 Call {company.phone}
+          </SecondaryButton>
         </div>
 
         {/* Trust Stats Card */}
-        <div>
-          <div className="trust-stats-card">
-            <div className="hero-stats">
-              {[
-                { num: '500+', label: 'Installations' },
-                { num: '5+ Yrs', label: 'Experience' },
-                { num: '5★', label: 'Google Rating' },
-              ].map((item, i) => (
-                <div key={i} style={{ textAlign: 'center', padding: '12px 0' }}>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: colors.blue }}>{item.num}</div>
-                  <div style={{ fontSize: 12, color: colors.textLight, marginTop: 4 }}>
-                    {item.label}
-                  </div>
+        <Card style={{ padding: 20 }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: 8,
+              textAlign: 'center',
+            }}
+          >
+            {[
+              { num: '500+', label: 'Installations' },
+              { num: '10yr', label: 'Warranty' },
+              { num: '5.0★', label: 'Rating' },
+            ].map((stat, i) => (
+              <div key={i}>
+                <div style={{ fontSize: 22, fontWeight: 700, color: colors.blue }}>
+                  {stat.num}
                 </div>
-              ))}
-            </div>
-
-            <div
-              style={{
-                marginTop: 20,
-                paddingTop: 20,
-                borderTop: `1px solid ${colors.border}`,
-                display: 'flex',
-                justifyContent: 'center',
-                gap: 16,
-                flexWrap: 'wrap',
-              }}
-            >
-              <span style={{ fontSize: 12, color: colors.textLight }}>✅ Licensed</span>
-              <span style={{ fontSize: 12, color: colors.textLight }}>✅ Insured</span>
-              <span style={{ fontSize: 12, color: colors.textLight }}>✅ Bonded</span>
-            </div>
+                <div style={{ fontSize: 11, color: colors.textLight, marginTop: 2 }}>
+                  {stat.label}
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        </Card>
       </div>
     </section>
-  );
-}
-
-// ============ STATS BAR (Desktop Only) ============
-function StatsBar() {
-  const stats = [
-    { num: '15MW+', label: 'Total Capacity Installed' },
-    { num: '500+', label: 'Projects Completed' },
-    { num: '24/7', label: 'Monitoring & Support' },
-    { num: '10yr', label: 'Warranty Coverage' },
-  ];
-
-  return (
-    <div className="stats-bar">
-      {stats.map((stat, i) => (
-        <div key={i} className="stat-item">
-          <div className="stat-number">{stat.num}</div>
-          <div className="stat-label">{stat.label}</div>
-        </div>
-      ))}
-    </div>
   );
 }
 
 // ============ PROBLEM SECTION ============
 function ProblemSection() {
   const problems = [
-    { icon: '⚡', title: 'Grid Outages', desc: 'Texas storms leave you in the dark' },
-    { icon: '💸', title: 'Rising Bills', desc: 'Energy costs keep climbing' },
-    { icon: '💧', title: 'Water Worries', desc: 'Quality & access concerns' },
-    { icon: '😰', title: 'No Control', desc: 'Dependent on unreliable systems' },
+    { icon: '❄️', title: 'Winter Storms', desc: 'Remember February 2021?' },
+    { icon: '🌡️', title: 'Summer Heat', desc: 'Rolling blackouts when you need AC most' },
+    { icon: '🏥', title: 'Medical Needs', desc: 'Keep critical equipment running' },
+    { icon: '💧', title: 'Water Security', desc: 'Clean water even during boil notices' },
   ];
 
   return (
-    <section className="section" style={{ background: colors.offWhite }}>
-      <div className="container">
-        <div className="section-header" style={{ textAlign: 'center', marginBottom: 28 }}>
-          <h2 style={{ fontSize: 24, fontWeight: 700, color: colors.navy, marginBottom: 10 }}>
-            Common Challenges
-          </h2>
-        </div>
+    <Section bg={colors.offWhite}>
+      <SectionHeader
+        title="Texas Weather Is Unpredictable"
+        subtitle="From ERCOT failures to summer heat waves, the grid can't always keep up. Be prepared with backup power and clean water."
+      />
 
-        <div className="grid-4-desktop" style={{ maxWidth: 900, margin: '0 auto' }}>
-          {problems.map((p, i) => (
-            <div
-              key={i}
-              style={{
-                background: colors.white,
-                borderRadius: 12,
-                padding: 20,
-                textAlign: 'center',
-                border: `1px solid ${colors.border}`,
-              }}
-            >
-              <div style={{ fontSize: 32, marginBottom: 10 }}>{p.icon}</div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: colors.navy, marginBottom: 4 }}>
-                {p.title}
-              </div>
-              <div style={{ fontSize: 14, color: colors.textLight, lineHeight: 1.5 }}>
-                {p.desc}
-              </div>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: 12,
+        }}
+      >
+        {problems.map((p, i) => (
+          <Card key={i} style={{ textAlign: 'center', padding: 16 }}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>{p.icon}</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: colors.navy, marginBottom: 4 }}>
+              {p.title}
             </div>
-          ))}
-        </div>
+            <div style={{ fontSize: 13, color: colors.textLight, lineHeight: 1.4 }}>
+              {p.desc}
+            </div>
+          </Card>
+        ))}
       </div>
-    </section>
+    </Section>
   );
 }
 
@@ -302,162 +443,65 @@ function ServicesSection() {
   const services = [
     {
       icon: '🔋',
-      title: 'Battery Installation',
-      desc: 'Store power for outages and reduce grid dependence.',
+      title: 'Home Battery Installation',
+      desc: 'Store power for outages and reduce peak-hour energy costs.',
     },
     {
-      icon: '⚡',
-      title: 'Panel Upgrades',
-      desc: 'Modernize your electrical for EVs, batteries, and smart home tech.',
+      icon: '☀️',
+      title: 'Solar + Battery Integration',
+      desc: 'Maximize your solar investment with intelligent storage.',
     },
     {
-      icon: '🏠',
-      title: 'Whole-Home Solutions',
-      desc: 'Complete energy and water independence packages.',
+      icon: '💧',
+      title: 'Water Generation Systems',
+      desc: 'Atmospheric water generators for clean drinking water.',
+    },
+    {
+      icon: '📱',
+      title: 'Smart Panel Upgrades',
+      desc: 'Circuit-level control and monitoring with SPAN panels.',
     },
   ];
 
   return (
-    <section id="services" className="section" style={{ background: colors.white }}>
-      <div className="container">
-        <div className="section-header" style={{ marginBottom: 32 }}>
-          <div
-            style={{
-              display: 'inline-block',
-              background: colors.blueLight,
-              color: colors.blue,
-              fontSize: 12,
-              fontWeight: 600,
-              padding: '6px 12px',
-              borderRadius: 6,
-              marginBottom: 16,
-            }}
-          >
-            SERVICES
-          </div>
+    <Section bg={colors.white} id="services">
+      <SectionHeader
+        label="WHAT WE DO"
+        title="Our Services"
+      />
 
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: colors.navy, marginBottom: 10 }}>
-            What We Do
-          </h2>
-        </div>
-
-        <div className="grid-3-desktop">
-          {services.map((s, i) => (
-            <div
-              key={i}
-              className="service-card"
-              style={{
-                background: colors.offWhite,
-                borderRadius: 16,
-                padding: 24,
-                border: `1px solid ${colors.border}`,
-                height: '100%',
-              }}
-            >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {services.map((s, i) => (
+          <Card key={i} style={{ padding: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
               <div
                 style={{
-                  width: 56,
-                  height: 56,
+                  width: 48,
+                  height: 48,
                   background: colors.blueLight,
-                  borderRadius: 14,
+                  borderRadius: 12,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: 26,
-                  marginBottom: 18,
+                  fontSize: 22,
+                  flexShrink: 0,
                 }}
               >
                 {s.icon}
               </div>
-
-              <h3 style={{ fontSize: 18, fontWeight: 700, color: colors.navy, marginBottom: 8 }}>
-                {s.title}
-              </h3>
-
-              <p style={{ fontSize: 14, color: colors.textLight, lineHeight: 1.6 }}>
-                {s.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ============ COMMERCIAL BANNER (Desktop Only) ============
-function CommercialBanner() {
-  return (
-    <section className="commercial-banner">
-      <div className="commercial-banner-inner">
-        <div>
-          <div
-            style={{
-              display: 'inline-block',
-              background: 'rgba(255,255,255,0.15)',
-              color: colors.white,
-              fontSize: 12,
-              fontWeight: 600,
-              padding: '6px 12px',
-              borderRadius: 6,
-              marginBottom: 20,
-            }}
-          >
-            COMMERCIAL
-          </div>
-          <h2 style={{ fontSize: 28, fontWeight: 700, color: colors.white, marginBottom: 16, lineHeight: 1.2 }}>
-            Commercial & Multi-Family Projects
-          </h2>
-          <p style={{ fontSize: 16, color: '#94A3B8', lineHeight: 1.6, marginBottom: 24 }}>
-            Scalable energy solutions for property managers and commercial developers.
-          </p>
-          <a href={`tel:${company.phone}`} className="btn-primary" style={{ display: 'inline-flex' }}>
-            Get Commercial Quote
-          </a>
-        </div>
-
-        <div style={{ display: 'grid', gap: 16 }}>
-          {[
-            { icon: '📊', title: 'Load Analysis', desc: 'Energy audits and demand profiling' },
-            { icon: '🔧', title: 'Turnkey Installation', desc: 'Design through commissioning' },
-            { icon: '📈', title: 'Monitoring', desc: '24/7 system monitoring' },
-          ].map((item, i) => (
-            <div
-              key={i}
-              style={{
-                background: 'rgba(255,255,255,0.05)',
-                borderRadius: 10,
-                padding: 16,
-                display: 'flex',
-                gap: 12,
-                alignItems: 'center',
-                border: '1px solid rgba(255,255,255,0.1)',
-              }}
-            >
-              <div
-                style={{
-                  width: 40,
-                  height: 40,
-                  background: 'rgba(255,255,255,0.1)',
-                  borderRadius: 8,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 18,
-                  flexShrink: 0,
-                }}
-              >
-                {item.icon}
-              </div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: colors.white }}>{item.title}</div>
-                <div style={{ fontSize: 13, color: '#94A3B8' }}>{item.desc}</div>
+                <h3 style={{ fontSize: 16, fontWeight: 600, color: colors.navy, marginBottom: 4 }}>
+                  {s.title}
+                </h3>
+                <p style={{ fontSize: 14, color: colors.textLight, lineHeight: 1.5 }}>
+                  {s.desc}
+                </p>
               </div>
             </div>
-          ))}
-        </div>
+          </Card>
+        ))}
       </div>
-    </section>
+    </Section>
   );
 }
 
@@ -465,367 +509,168 @@ function CommercialBanner() {
 function ProductsSection() {
   const products = [
     {
-      icon: '🔋',
-      name: 'Tesla Powerwall 3',
-      tagline: 'The gold standard in home batteries',
-      tags: ['13.5 kWh', 'Seamless Backup', 'App Control', 'Sleek Design'],
+      name: 'FranklinWH',
+      tagline: 'aPower 2 & aGate',
+      desc: '15kWh battery with integrated inverter. The aGate hub intelligently manages your solar, grid, and battery for optimal efficiency.',
+      tags: ['15kWh per unit', 'Stackable', 'Integrated inverter', 'Smart app'],
+      link: 'https://www.franklinwh.com',
       featured: true,
-      showOnMobile: true,
+      badge: '⭐ OUR TOP PICK',
+      badgeColor: colors.blue,
     },
     {
-      icon: '📊',
-      name: 'SPAN Smart Panel',
-      tagline: 'Intelligent electrical panel',
-      tags: ['Circuit Control', 'Energy Monitoring', 'EV Ready', 'App Managed'],
+      name: 'SPAN Panel',
+      tagline: 'Smart Electrical Panel',
+      desc: 'Replace your breaker panel with intelligent circuit-level control. Monitor and manage every circuit from your phone.',
+      tags: ['Circuit control', 'Energy monitoring', 'Works with any battery', 'App control'],
+      link: 'https://www.span.io',
       featured: false,
-      showOnMobile: true,
+      badge: '🎛️ SMART PANEL',
+      badgeColor: colors.navy,
     },
     {
-      icon: '⚡',
-      name: 'FranklinWH aPower 2',
-      tagline: 'Scalable whole-home power',
-      tags: ['Modular Design', '15 kWh', 'Smart Gateway', 'Grid Hybrid'],
+      name: 'Aquaria Hydropanels',
+      tagline: 'Water from Air',
+      desc: 'Atmospheric water generators that create clean drinking water from humidity. No plumbing required, solar-powered option available.',
+      tags: ['Solar powered', 'No plumbing', 'Emergency ready', 'Low maintenance'],
+      link: 'https://www.aquaria.com',
       featured: false,
-      showOnMobile: false,
+      badge: '💧 WATER',
+      badgeColor: colors.success,
     },
     {
-      icon: '🔌',
-      name: 'FranklinWH S Battery',
-      tagline: 'Expand your storage capacity',
-      tags: ['Stackable', '13.6 kWh Each', 'Easy Add-On', 'Weather Rated'],
+      name: 'Tesla Powerwall',
+      tagline: 'Proven Reliability',
+      desc: '13.5kWh battery with seamless backup. Storm Watch feature automatically prepares for severe weather.',
+      tags: ['13.5kWh', 'Storm Watch', 'Tesla app', 'Proven reliability'],
+      link: 'https://www.tesla.com/powerwall',
       featured: false,
-      showOnMobile: false,
-    },
-    {
-      icon: '💧',
-      name: 'Aquaria Hydropacks',
-      tagline: 'Pure water from the air',
-      tags: ['Atmospheric Water', 'Off-Grid Ready', 'No Plumbing', 'Texas Made'],
-      featured: false,
-      showOnMobile: true,
+      badge: null,
+      badgeColor: null,
     },
   ];
 
   return (
-    <section id="products" className="section" style={{ background: colors.blueLight }}>
-      <div className="container">
-        <div className="section-header" style={{ marginBottom: 32 }}>
-          <div
+    <Section bg={colors.offWhite} id="products">
+      <SectionHeader
+        label="PRODUCTS WE INSTALL"
+        title="Quality Brands We Trust"
+      />
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {products.map((p, i) => (
+          <Card
+            key={i}
+            featured={p.featured}
+            badge={p.badge}
+            badgeColor={p.badgeColor}
+            style={{ paddingTop: p.badge ? 28 : 20 }}
+          >
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: colors.navy, marginBottom: 4 }}>
+              {p.name}
+            </h3>
+            <div style={{ fontSize: 14, color: colors.blue, fontWeight: 500, marginBottom: 10 }}>
+              {p.tagline}
+            </div>
+            <p style={{ fontSize: 14, color: colors.textLight, lineHeight: 1.6, marginBottom: 14 }}>
+              {p.desc}
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+              {p.tags.map((tag, j) => (
+                <Tag key={j}>{tag}</Tag>
+              ))}
+            </div>
+            <ProductLink href={p.link}>Learn more</ProductLink>
+          </Card>
+        ))}
+
+        {/* Other Batteries */}
+        <Card style={{ textAlign: 'center', padding: 20 }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: colors.navy, marginBottom: 8 }}>
+            Need something else?
+          </div>
+          <p style={{ fontSize: 14, color: colors.textLight, lineHeight: 1.5, marginBottom: 12 }}>
+            We install other battery systems by request—EG4, EcoFlow, and more. Tell us what you need.
+          </p>
+          <a
+            href={`tel:${company.phoneRaw}`}
             style={{
-              display: 'inline-block',
-              background: colors.white,
               color: colors.blue,
-              fontSize: 12,
               fontWeight: 600,
-              padding: '6px 12px',
-              borderRadius: 6,
-              marginBottom: 16,
+              fontSize: 14,
+              textDecoration: 'none',
             }}
           >
-            PRODUCTS
-          </div>
-
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: colors.navy, marginBottom: 10 }}>
-            Products We Install
-          </h2>
-
-          <p style={{ fontSize: 15, color: colors.textLight, lineHeight: 1.6, maxWidth: 500 }}>
-            Reliable, proven solutions from trusted brands.
-          </p>
-        </div>
-
-        <div className="products-grid">
-          {products.map((p, i) => (
-            <div
-              key={i}
-              className={`product-card ${p.featured ? 'product-featured' : ''} ${!p.showOnMobile ? 'mobile-hide' : ''}`}
-              style={{
-                background: colors.white,
-                borderRadius: 16,
-                padding: 20,
-                border: p.featured ? `2px solid ${colors.blue}` : `1px solid ${colors.border}`,
-                position: 'relative',
-              }}
-            >
-              {p.featured && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: -12,
-                    left: 20,
-                    background: colors.blue,
-                    color: colors.white,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: '5px 12px',
-                    borderRadius: 6,
-                  }}
-                >
-                  ⭐ OUR TOP PICK
-                </div>
-              )}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 14,
-                  marginTop: p.featured ? 8 : 0,
-                }}
-              >
-                <div
-                  style={{
-                    width: 56,
-                    height: 56,
-                    background: colors.blueLight,
-                    borderRadius: 12,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 28,
-                    flexShrink: 0,
-                  }}
-                >
-                  {p.icon}
-                </div>
-                <div>
-                  <h3 style={{ fontSize: 18, fontWeight: 700, color: colors.navy, marginBottom: 4 }}>
-                    {p.name}
-                  </h3>
-                  <p style={{ fontSize: 13, color: colors.textLight }}>{p.tagline}</p>
-                </div>
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 16 }}>
-                {p.tags.map((tag, j) => (
-                  <span
-                    key={j}
-                    style={{
-                      background: colors.blueLight,
-                      color: colors.blue,
-                      fontSize: 11,
-                      fontWeight: 500,
-                      padding: '4px 10px',
-                      borderRadius: 5,
-                    }}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Additional brands note */}
-        <div style={{ textAlign: 'center', marginTop: 32 }}>
-          <p style={{ fontSize: 14, color: colors.textLight }}>
-            We also install Enphase, SolarEdge, LG, and other brands.
-          </p>
-        </div>
+            Contact us →
+          </a>
+        </Card>
       </div>
-    </section>
-  );
-}
-
-// ============ PROCESS SECTION (Desktop Only) ============
-function ProcessSection() {
-  const steps = [
-    { num: '01', title: 'Consultation', desc: 'We discuss your needs and goals.' },
-    { num: '02', title: 'Site Visit', desc: 'On-site evaluation and load analysis.' },
-    { num: '03', title: 'Proposal', desc: 'Custom design with transparent pricing.' },
-    { num: '04', title: 'Installation', desc: 'Permitting, install, and commissioning.' },
-  ];
-
-  return (
-    <section id="process" className="process-section section" style={{ background: colors.white }}>
-      <div className="container">
-        <div className="section-header" style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div
-            style={{
-              display: 'inline-block',
-              background: colors.successLight,
-              color: colors.success,
-              fontSize: 12,
-              fontWeight: 600,
-              padding: '6px 12px',
-              borderRadius: 6,
-              marginBottom: 16,
-            }}
-          >
-            PROCESS
-          </div>
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: colors.navy, marginBottom: 10 }}>
-            How It Works
-          </h2>
-        </div>
-
-        <div className="process-grid">
-          {steps.map((step, i) => (
-            <div key={i} className="process-step">
-              <div
-                style={{
-                  width: 80,
-                  height: 80,
-                  background: colors.blueLight,
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 20px',
-                }}
-              >
-                <span style={{ fontSize: 24, fontWeight: 700, color: colors.blue }}>{step.num}</span>
-              </div>
-              <h3 style={{ fontSize: 18, fontWeight: 700, color: colors.navy, marginBottom: 10 }}>{step.title}</h3>
-              <p style={{ fontSize: 14, color: colors.textLight, lineHeight: 1.6 }}>{step.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+    </Section>
   );
 }
 
 // ============ ABOUT SECTION ============
 function AboutSection() {
   const badges = [
-    { icon: '✅', label: 'Licensed & Insured' },
-    { icon: '🏅', label: 'Certified Installers' },
-    { icon: '📋', label: '5+ Years Experience' },
-    { icon: '🤝', label: 'Local Texas Team' },
+    { icon: '🏠', label: 'Locally Owned' },
+    { icon: '📋', label: 'Texas Licensed' },
+    { icon: '🛡️', label: 'Fully Insured' },
+    { icon: '⭐', label: '5-Star Rated' },
   ];
 
   const whyUs = [
-    'Transparent pricing—no hidden fees',
-    'Premium products with manufacturer warranties',
-    'Fast response and clear communication',
-    'Support after your project is complete',
+    'Transparent pricing with no hidden fees',
+    'Direct communication—not a call center',
+    'Manufacturer-certified installers',
+    'Support long after your project is complete',
+    '10-year workmanship warranty',
   ];
 
   return (
-    <section id="about" className="section" style={{ background: colors.white }}>
-      <div className="container">
-        <div className="section-header" style={{ marginBottom: 32 }}>
-          <div
-            style={{
-              display: 'inline-block',
-              background: colors.successLight,
-              color: colors.success,
-              fontSize: 12,
-              fontWeight: 600,
-              padding: '6px 12px',
-              borderRadius: 6,
-              marginBottom: 16,
-            }}
-          >
-            ABOUT US
-          </div>
+    <Section bg={colors.white} id="about">
+      <SectionHeader
+        title="Your Neighbors, Not a Call Center"
+        subtitle="We're a Fort Worth company, owned and operated by Texans who understand what it means to lose power in the summer heat or during a winter freeze."
+      />
 
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: colors.navy, marginBottom: 10 }}>
-            Why Choose Prometheus
-          </h2>
-        </div>
-
-        <div className="about-layout">
-          {/* Trust Badges */}
-          <div className="grid-2" style={{ gap: 14 }}>
-            {badges.map((b, i) => (
-              <div
-                key={i}
-                style={{
-                  background: colors.offWhite,
-                  borderRadius: 12,
-                  padding: 20,
-                  textAlign: 'center',
-                  border: `1px solid ${colors.border}`,
-                }}
-              >
-                <div style={{ fontSize: 32, marginBottom: 8 }}>{b.icon}</div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: colors.navy }}>{b.label}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Why Choose Us Card */}
-          <div
-            style={{
-              background: colors.navy,
-              borderRadius: 16,
-              padding: 24,
-              marginTop: 20,
-            }}
-            className="why-us-card"
-          >
-            <h3 style={{ fontSize: 18, fontWeight: 700, color: colors.white, marginBottom: 16 }}>
-              What Sets Us Apart
-            </h3>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {whyUs.map((item, i) => (
-                <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <span style={{ color: colors.success, fontSize: 16, marginTop: 2 }}>✓</span>
-                  <span style={{ fontSize: 14, color: '#E2E8F0', lineHeight: 1.5 }}>{item}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+      {/* Trust Badges */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: 12,
+          marginBottom: 20,
+        }}
+      >
+        {badges.map((b, i) => (
+          <Card key={i} style={{ textAlign: 'center', padding: 16 }}>
+            <div style={{ fontSize: 28, marginBottom: 6 }}>{b.icon}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: colors.navy }}>{b.label}</div>
+          </Card>
+        ))}
       </div>
-    </section>
-  );
-}
 
-// ============ CERTIFICATIONS SECTION (Desktop Only) ============
-function CertificationsSection() {
-  const certs = [
-    { icon: '⚡', name: 'Tesla Certified', desc: 'Powerwall Installer' },
-    { icon: '🏅', name: 'NABCEP', desc: 'PV Professional' },
-    { icon: '📋', name: 'Texas TDLR', desc: 'Licensed Contractor' },
-    { icon: '🔧', name: 'FranklinWH', desc: 'Certified Partner' },
-  ];
-
-  return (
-    <section className="certifications-section section" style={{ background: colors.offWhite }}>
-      <div className="container">
-        <div className="section-header" style={{ textAlign: 'center', marginBottom: 36 }}>
-          <div
-            style={{
-              display: 'inline-block',
-              background: colors.white,
-              color: colors.blue,
-              fontSize: 12,
-              fontWeight: 600,
-              padding: '6px 12px',
-              borderRadius: 6,
-              marginBottom: 16,
-            }}
-          >
-            CERTIFICATIONS
-          </div>
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: colors.navy, marginBottom: 10 }}>
-            Our Credentials
-          </h2>
-        </div>
-
-        <div className="certifications-grid">
-          {certs.map((cert, i) => (
-            <div
-              key={i}
-              style={{
-                background: colors.white,
-                borderRadius: 12,
-                padding: 24,
-                textAlign: 'center',
-                border: `1px solid ${colors.border}`,
-              }}
-            >
-              <div style={{ fontSize: 36, marginBottom: 12 }}>{cert.icon}</div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: colors.navy, marginBottom: 4 }}>{cert.name}</div>
-              <div style={{ fontSize: 13, color: colors.textLight }}>{cert.desc}</div>
+      {/* Why Choose Us Card */}
+      <div
+        style={{
+          background: colors.navy,
+          borderRadius: 14,
+          padding: 24,
+        }}
+      >
+        <h3 style={{ fontSize: 18, fontWeight: 700, color: colors.white, marginBottom: 16 }}>
+          Why Choose Us
+        </h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {whyUs.map((item, i) => (
+            <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <span style={{ color: colors.success, fontSize: 16, marginTop: 1 }}>✓</span>
+              <span style={{ fontSize: 14, color: '#E2E8F0', lineHeight: 1.5 }}>{item}</span>
             </div>
           ))}
         </div>
       </div>
-    </section>
+    </Section>
   );
 }
 
@@ -833,136 +678,80 @@ function CertificationsSection() {
 function ReviewsSection() {
   const reviews = [
     {
-      quote: "Prometheus made backup power easy. Professional from start to finish.",
+      quote: "After the 2021 freeze, we knew we needed backup power. Prometheus made it easy. Professional from start to finish, and now we sleep easy during storms.",
       author: 'Sarah M.',
       location: 'Fort Worth',
     },
     {
-      quote: "Panel upgrade and Powerwall installed in one day. On time and clean work.",
+      quote: "Great communication throughout the process. They showed up when they said they would and cleaned up after themselves. The FranklinWH system works flawlessly.",
       author: 'Mike T.',
-      location: 'Arlington',
+      location: 'Southlake',
     },
     {
-      quote: "Honest advice, no upselling. Our energy bills are down significantly.",
+      quote: "We have a family member on oxygen, so reliable power isn't optional. Prometheus understood that and designed a system that gives us true peace of mind.",
       author: 'Jennifer K.',
-      location: 'Plano',
+      location: 'Keller',
     },
   ];
 
   return (
-    <section id="reviews" className="section" style={{ background: colors.offWhite }}>
-      <div className="container">
-        <div className="section-header" style={{ marginBottom: 32 }}>
-          <div
-            style={{
-              display: 'inline-block',
-              background: colors.orangeLight,
-              color: colors.orange,
-              fontSize: 12,
-              fontWeight: 600,
-              padding: '6px 12px',
-              borderRadius: 6,
-              marginBottom: 16,
-            }}
-          >
-            REVIEWS
-          </div>
+    <Section bg={colors.offWhite} id="reviews">
+      <SectionHeader title="What Customers Say" />
 
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: colors.navy, marginBottom: 10 }}>
-            What Customers Say
-          </h2>
-        </div>
-
-        <div className="grid-3-desktop">
-          {reviews.map((r, i) => (
-            <div
-              key={i}
-              className="review-card"
-              style={{
-                background: colors.white,
-                borderRadius: 14,
-                padding: 24,
-                border: `1px solid ${colors.border}`,
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <div style={{ display: 'flex', gap: 3, marginBottom: 14 }}>
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <span key={s} style={{ color: '#FBBF24', fontSize: 18 }}>★</span>
-                ))}
-              </div>
-              <p style={{ fontSize: 14, color: colors.text, lineHeight: 1.6, marginBottom: 16, flex: 1 }}>
-                "{r.quote}"
-              </p>
-              <div style={{ fontSize: 14, fontWeight: 600, color: colors.navy }}>
-                {r.author}
-                <span style={{ fontWeight: 400, color: colors.textLight }}> • {r.location}</span>
-              </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {reviews.map((r, i) => (
+          <Card key={i} style={{ padding: 20 }}>
+            {/* Stars */}
+            <div style={{ display: 'flex', gap: 2, marginBottom: 12 }}>
+              {[1, 2, 3, 4, 5].map((s) => (
+                <span key={s} style={{ color: '#FBBF24', fontSize: 16 }}>★</span>
+              ))}
             </div>
-          ))}
-        </div>
+            <p style={{ fontSize: 14, color: colors.text, lineHeight: 1.6, marginBottom: 14 }}>
+              "{r.quote}"
+            </p>
+            <div style={{ fontSize: 14 }}>
+              <span style={{ fontWeight: 600, color: colors.navy }}>{r.author}</span>
+              <span style={{ color: colors.textLight }}> • {r.location}</span>
+            </div>
+          </Card>
+        ))}
       </div>
-    </section>
+    </Section>
   );
 }
 
 // ============ SERVICE AREA SECTION ============
 function ServiceAreaSection() {
-  const dfwCities = [
-    'Fort Worth',
-    'Dallas',
-    'Arlington',
-    'Plano',
-    'Irving',
-    'Frisco',
-    'McKinney',
-    'Denton',
-    'Garland',
-    'Carrollton',
-  ];
-
   return (
-    <section id="areas" className="section" style={{ background: colors.navy }}>
-      <div className="container">
-        <div className="section-header" style={{ marginBottom: 24 }}>
-          <div
-            style={{
-              display: 'inline-block',
-              background: 'rgba(255,255,255,0.15)',
-              color: colors.white,
-              fontSize: 12,
-              fontWeight: 600,
-              padding: '6px 12px',
-              borderRadius: 6,
-              marginBottom: 16,
-            }}
-          >
-            SERVICE AREA
-          </div>
+    <Section bg={colors.navy} id="areas">
+      <div style={{ textAlign: 'center' }}>
+        <h2 style={{ fontSize: 24, fontWeight: 700, color: colors.white, marginBottom: 10 }}>
+          Serving the DFW Metroplex
+        </h2>
+        <p style={{ fontSize: 14, color: '#94A3B8', marginBottom: 24, lineHeight: 1.5 }}>
+          Based in Fort Worth, proudly serving these communities and beyond.
+        </p>
 
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: colors.white, marginBottom: 10 }}>
-            Serving the DFW Metroplex
-          </h2>
-
-          <p style={{ fontSize: 15, color: '#94A3B8', lineHeight: 1.6 }}>
-            Based in Fort Worth, serving the Dallas-Fort Worth area.
-          </p>
-        </div>
-
-        <div className="service-tags">
-          {dfwCities.map((city, i) => (
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 8,
+            justifyContent: 'center',
+          }}
+        >
+          {company.serviceArea.map((city, i) => (
             <span
               key={i}
               style={{
                 background: city === 'Fort Worth' ? colors.blue : 'rgba(255,255,255,0.1)',
                 color: colors.white,
                 fontSize: 13,
-                fontWeight: 500,
+                fontWeight: city === 'Fort Worth' ? 600 : 500,
                 padding: '8px 14px',
-                borderRadius: 6,
-                border: city === 'Fort Worth' ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 20,
+                border: city === 'Fort Worth' ? 'none' : '1px solid rgba(255,255,255,0.15)',
               }}
             >
               {city}
@@ -970,128 +759,104 @@ function ServiceAreaSection() {
           ))}
         </div>
       </div>
-    </section>
+    </Section>
   );
 }
 
 // ============ FINAL CTA ============
 function FinalCTA() {
   return (
-    <section className="section" style={{ background: colors.blueLight, textAlign: 'center' }}>
-      <div className="container">
-        <h2 style={{ fontSize: 28, fontWeight: 700, color: colors.navy, marginBottom: 12, lineHeight: 1.2 }}>
-          Ready to Get Started?
+    <Section bg={colors.blueLight}>
+      <div style={{ textAlign: 'center' }}>
+        <h2 style={{ fontSize: 26, fontWeight: 700, color: colors.navy, marginBottom: 12 }}>
+          Ready to Stop Worrying?
         </h2>
-
-        <p style={{ fontSize: 15, color: colors.textLight, marginBottom: 24, lineHeight: 1.5, maxWidth: 400, marginLeft: 'auto', marginRight: 'auto' }}>
-          Get a free consultation and quote for your project.
+        <p style={{ fontSize: 15, color: colors.textLight, marginBottom: 28, lineHeight: 1.5 }}>
+          Get a free, no-pressure estimate for your home. We'll assess your needs and design a system that fits your budget.
         </p>
 
-        <div className="cta-buttons">
-          <a href={`tel:${company.phone}`} className="btn-primary">
-            Call {company.phone}
-          </a>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <PrimaryButton href={`tel:${company.phoneRaw}`}>
+            Get Your Free Estimate
+          </PrimaryButton>
+          <SecondaryButton href={`tel:${company.phoneRaw}`}>
+            📞 Call {company.phone}
+          </SecondaryButton>
         </div>
       </div>
-    </section>
+    </Section>
   );
 }
 
 // ============ FOOTER ============
 function Footer() {
   return (
-    <footer className="section" style={{ background: colors.navy, paddingTop: 48, paddingBottom: 32 }}>
-      <div className="container">
-        <div className="footer-inner">
-          <div className="footer-grid">
-            {/* Logo & Info */}
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-                <div
-                  style={{
-                    width: 48,
-                    height: 48,
-                    background: `linear-gradient(135deg, ${colors.orange} 0%, ${colors.blue} 100%)`,
-                    borderRadius: 12,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 24,
-                  }}
-                >
-                  ⚡
-                </div>
-                <div>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: colors.white }}>
-                    Prometheus Power Solutions
-                  </div>
-                  <div style={{ fontSize: 13, color: '#94A3B8' }}>Fort Worth, Texas</div>
-                </div>
-              </div>
-
-              <a
-                href={`tel:${company.phone}`}
-                style={{
-                  display: 'inline-block',
-                  fontSize: 22,
-                  fontWeight: 700,
-                  color: colors.white,
-                  textDecoration: 'none',
-                  marginBottom: 16,
-                }}
-              >
-                📞 {company.phone}
-              </a>
-
-              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 16 }}>
-                <span style={{ fontSize: 12, color: '#64748B' }}>✅ Licensed</span>
-                <span style={{ fontSize: 12, color: '#64748B' }}>✅ Insured</span>
-                <span style={{ fontSize: 12, color: '#64748B' }}>✅ Bonded</span>
-              </div>
-            </div>
-
-            {/* Desktop Footer Links */}
-            <div className="footer-links">
-              <div className="footer-links-column">
-                <h4>Services</h4>
-                <a href="#services">Battery Installation</a>
-                <a href="#services">Panel Upgrades</a>
-                <a href="#services">Whole-Home Solutions</a>
-                <a href="#services">Commercial Projects</a>
-              </div>
-              <div className="footer-links-column">
-                <h4>Products</h4>
-                <a href="#products">Tesla Powerwall</a>
-                <a href="#products">SPAN Panel</a>
-                <a href="#products">FranklinWH</a>
-                <a href="#products">Aquaria</a>
-              </div>
-              <div className="footer-links-column">
-                <h4>Company</h4>
-                <a href="#about">About Us</a>
-                <a href="#process">Our Process</a>
-                <a href="#reviews">Reviews</a>
-                <a href="#areas">Service Areas</a>
-              </div>
-            </div>
-          </div>
-
-          {/* Copyright */}
+    <footer style={{ background: colors.navy, padding: '48px 20px 32px' }}>
+      <div style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
+        {/* Logo */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 12,
+            marginBottom: 20,
+          }}
+        >
           <div
-            className="footer-bottom"
             style={{
-              fontSize: 12,
-              color: '#475569',
-              borderTop: '1px solid #2D3748',
-              paddingTop: 24,
-              marginTop: 32,
+              width: 44,
+              height: 44,
+              background: `linear-gradient(135deg, ${colors.orange} 0%, ${colors.blue} 100%)`,
+              borderRadius: 12,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 22,
             }}
           >
-            <span>© {new Date().getFullYear()} Prometheus Power Solutions. All rights reserved.</span>
-            <span className="hide-mobile" style={{ fontSize: 12, color: '#64748B' }}>
-              Serving Fort Worth, Dallas, and all of Texas
-            </span>
+            ⚡
           </div>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: colors.white }}>
+              Prometheus Power Solutions
+            </div>
+            <div style={{ fontSize: 12, color: '#94A3B8' }}>
+              Fort Worth, TX
+            </div>
+          </div>
+        </div>
+
+        {/* License */}
+        <div style={{ fontSize: 12, color: '#64748B', marginBottom: 20 }}>
+          Texas Electrical Contractor License: {company.license}
+        </div>
+
+        {/* Phone */}
+        <a
+          href={`tel:${company.phoneRaw}`}
+          style={{
+            display: 'inline-block',
+            fontSize: 24,
+            fontWeight: 700,
+            color: colors.orange,
+            textDecoration: 'none',
+            marginBottom: 24,
+          }}
+        >
+          {company.phone}
+        </a>
+
+        {/* Copyright */}
+        <div
+          style={{
+            fontSize: 12,
+            color: '#475569',
+            borderTop: '1px solid #2D3748',
+            paddingTop: 20,
+          }}
+        >
+          © {new Date().getFullYear()} Prometheus Power Solutions. All rights reserved.
         </div>
       </div>
     </footer>

@@ -14,14 +14,14 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
-  color: #2D3748;
-  background: #FFFFFF;
+  /* Colors will be set dynamically by theme */
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Focus states for accessibility */
 a:focus-visible,
 button:focus-visible {
-  outline: 2px solid #1E6BB8;
+  outline: 2px solid #0EA5E9;
   outline-offset: 2px;
 }
 
@@ -67,10 +67,16 @@ html, body {
   overflow-x: hidden;
 }
 
-/* Selection styling */
+/* Selection styling - Light mode */
 ::selection {
-  background: #E8F2FC;
-  color: #1A2B3C;
+  background: #E0F2FE;
+  color: #1E293B;
+}
+
+/* Selection styling - Dark mode */
+html.dark ::selection {
+  background: #1E3A5F;
+  color: #F1F5F9;
 }
 
 /* Smooth images */
@@ -80,7 +86,7 @@ img {
   display: block;
 }
 
-/* Hide scrollbar but allow scrolling (optional) */
+/* Scrollbar styling - Light mode */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -96,4 +102,17 @@ img {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #CBD5E1;
+}
+
+/* Scrollbar styling - Dark mode */
+html.dark ::-webkit-scrollbar-track {
+  background: #1E293B;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
 }
